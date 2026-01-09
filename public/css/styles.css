@@ -137,6 +137,57 @@ body {
     padding: 0 20px 60px;
 }
 
+.tab-buttons {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    background: white;
+    padding: 8px;
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm);
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 14px 24px;
+    border: none;
+    background: transparent;
+    color: var(--text-light);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.tab-btn:hover {
+    background: #f8f8f8;
+    color: var(--text-color);
+}
+
+.tab-btn.active {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    box-shadow: var(--shadow-sm);
+}
+
+.tab-btn i {
+    font-size: 18px;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+    animation: fadeIn 0.4s ease;
+}
+
 .download-section {
     background: white;
     padding: 40px;
@@ -182,7 +233,8 @@ body {
     background: #f8f8f8;
 }
 
-#tiktok-url {
+#tiktok-url,
+#search-query {
     width: 100%;
     padding: 16px 50px 16px 20px;
     border: 2px solid var(--border-color);
@@ -193,7 +245,12 @@ body {
     background: #fafafa;
 }
 
-#tiktok-url:focus {
+#search-query {
+    padding: 16px 20px;
+}
+
+#tiktok-url:focus,
+#search-query:focus {
     border-color: var(--primary-color);
     background: white;
     box-shadow: 0 0 0 4px rgba(254, 44, 85, 0.1);
@@ -665,6 +722,81 @@ body {
     font-size: 18px;
 }
 
+.pagination {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 30px;
+    padding: 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm);
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 400px;
+    gap: 20px;
+}
+
+.pagination-btn {
+    padding: 10px 20px;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    justify-content: center;
+}
+
+#prev-page {
+    background: white;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
+}
+
+#prev-page:hover:not(:disabled) {
+    background: #f8f8f8;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+#next-page {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+}
+
+#next-page:hover:not(:disabled) {
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.pagination-btn:disabled {
+    background: #e0e0e0;
+    color: #999;
+    cursor: not-allowed;
+    transform: none;
+    border: 2px solid #e0e0e0;
+}
+
+.page-info {
+    font-size: 14px;
+    color: var(--text-color);
+    font-weight: 600;
+    order: -1;
+}
+
 .features-section {
     background: white;
     padding: 50px 40px;
@@ -837,6 +969,19 @@ footer {
         right: 15px;
     }
 
+    .tab-buttons {
+        gap: 8px;
+    }
+
+    .tab-btn {
+        padding: 12px 16px;
+        font-size: 14px;
+    }
+
+    .tab-btn i {
+        font-size: 16px;
+    }
+
     .download-section {
         padding: 30px 20px;
     }
@@ -850,9 +995,14 @@ footer {
         justify-content: center;
     }
 
-    #tiktok-url {
+    #tiktok-url,
+    #search-query {
         padding: 14px 45px 14px 20px;
         font-size: 15px;
+    }
+
+    #search-query {
+        padding: 14px 20px;
     }
 
     .options-grid {
@@ -904,6 +1054,18 @@ footer {
     .no-result-content p {
         font-size: 15px;
     }
+
+    .pagination {
+        gap: 12px;
+    }
+
+    .pagination-controls {
+        max-width: 100%;
+    }
+
+    .pagination-btn {
+        flex: 1;
+    }
 }
 
 @media (max-width: 480px) {
@@ -919,14 +1081,28 @@ footer {
         font-size: 13px;
     }
 
+    .tab-buttons {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .tab-btn {
+        padding: 12px 16px;
+    }
+
     .download-section {
         padding: 25px 15px;
         border-radius: 16px;
     }
 
-    #tiktok-url {
+    #tiktok-url,
+    #search-query {
         padding: 12px 40px 12px 20px;
         font-size: 14px;
+    }
+
+    #search-query {
+        padding: 12px 20px;
     }
 
     .download-btn {
@@ -1007,5 +1183,15 @@ footer {
     .try-again-btn {
         padding: 12px 28px;
         font-size: 15px;
+    }
+
+    .pagination-controls {
+        flex-direction: row;
+        gap: 10px;
+    }
+
+    .pagination-btn {
+        padding: 10px 16px;
+        font-size: 13px;
     }
 }
