@@ -1,26 +1,13 @@
 const API_BASE_URL = 'https://api-tiktok-rscoders.vercel.app/';
 
-const extractTikTokUrl = (text) => {
-    const urlPattern = /https?:\/\/(?:www\.)?(?:vm\.tiktok\.com|vt\.tiktok\.com|tiktok\.com)\/[^\s]*/gi;
-    const matches = text.match(urlPattern);
-    if (matches && matches.length > 0) return matches[0].split(/[\s,]/)[0];
-    return null;
-};
-
 async function pasteFromClipboard() {
     try {
         const text = await navigator.clipboard.readText();
-        const url = extractTikTokUrl(text);
-        
-        if (url) {
-            const input = document.getElementById('tiktok-url');
-            input.value = url;
-            input.classList.add('paste-effect');
-            setTimeout(() => input.classList.remove('paste-effect'), 800);
-            input.focus();
-        } else {
-            showError('No valid TikTok URL found in clipboard!');
-        }
+        const input = document.getElementById('tiktok-url');
+        input.value = text.trim();
+        input.classList.add('paste-effect');
+        setTimeout(() => input.classList.remove('paste-effect'), 800);
+        input.focus();
     } catch (err) {
         showError('Failed to read clipboard. Please paste manually.');
     }
@@ -49,18 +36,6 @@ function handleDownload() {
     
     if (!url) {
         showError('Please enter a TikTok URL!');
-        return;
-    }
-    
-    const extractedUrl = extractTikTokUrl(url);
-    if (extractedUrl) {
-        url = extractedUrl;
-        input.value = url;
-    }
-    
-    const tiktokRegex = /^https:\/\/.*tiktok\.com\/.+/;
-    if (!tiktokRegex.test(url)) {
-        showError('Invalid TikTok URL! Please enter a valid TikTok link.');
         return;
     }
     
@@ -111,13 +86,6 @@ function getTikTokData(url) {
     xhr.send();
 }
 
-function sanitizeFilename(text) {
-    return text
-        .replace(/[^\w\s-]/g, '')
-        .replace(/\s+/g, '_')
-        .substring(0, 50);
-}
-
 function displayResult(data) {
     const resultContainer = document.getElementById('result-container');
     const noResultContainer = document.getElementById('no-result-container');
@@ -158,9 +126,6 @@ function displayResult(data) {
     const optionsGrid = document.getElementById('options-grid');
     optionsGrid.innerHTML = '';
     
-    const baseFilename = sanitizeFilename(data.title_video);
-    const author = sanitizeFilename(data.author_username);
-    
     if (data.video_hd) {
         const videoHDCard = createOptionCard(
             'Video HD',
@@ -169,8 +134,7 @@ function displayResult(data) {
             'video',
             data.video_hd,
             'HD',
-            'hd',
-            `${author}_${baseFilename}_HD.mp4`
+            'hd'
         );
         optionsGrid.appendChild(videoHDCard);
     }
@@ -183,14 +147,12 @@ function displayResult(data) {
             'video',
             data.video_sd,
             'SD',
-            'sd',
-            `${author}_${baseFilename}_SD.mp4`
+            'sd'
         );
         optionsGrid.appendChild(videoSDCard);
     }
     
     if (data.audio) {
-        const audioFilename = sanitizeFilename(data.title_audio);
         const audioCard = createOptionCard(
             'Audio MP3',
             data.title_audio,
@@ -198,8 +160,7 @@ function displayResult(data) {
             'audio',
             data.audio,
             'MP3',
-            'audio',
-            `${author}_${audioFilename}.mp3`
+            'audio'
         );
         optionsGrid.appendChild(audioCard);
     }
@@ -258,7 +219,7 @@ function showNoResult(message) {
     window.scrollTo({ top: noResultContainer.offsetTop - 100, behavior: 'smooth' });
 }
 
-function createOptionCard(title, description, icon, type, sourcesUrl, badgeText, badgeClass, filename) {
+function createOptionCard(title, description, icon, type, downloadUrl, badgeText, badgeClass) {
     const card = document.createElement('div');
     card.className = 'option-card';
     
@@ -274,7 +235,7 @@ function createOptionCard(title, description, icon, type, sourcesUrl, badgeText,
         </div>
         <div class="option-action">
             <span class="quality-badge ${badgeClass}">${badgeText}</span>
-            <button class="download-action-btn" onclick="downloadFile('${sourcesUrl}', '${filename}')">
+            <button class="download-action-btn" onclick="downloadFile('${downloadUrl}')">
                 Download <i class="fas fa-arrow-right"></i>
             </button>
         </div>
@@ -283,12 +244,9 @@ function createOptionCard(title, description, icon, type, sourcesUrl, badgeText,
     return card;
 }
 
-function downloadFile(sourcesUrl, filename) {
-    const DownloadUrl = API_BASE_URL + 'api/download?url=' + encodeURIComponent(sourcesUrl) + '&filename=' + encodeURIComponent(filename);
-    
+function downloadFile(downloadUrl) {
     const link = document.createElement('a');
-    link.href = DownloadUrl;
-    link.download = filename;
+    link.href = downloadUrl;
     link.target = '_blank';
     document.body.appendChild(link);
     link.click();
@@ -342,3 +300,4 @@ document.addEventListener('DOMContentLoaded', function() {
     
     window.addEventListener('scroll', handleScroll);
 });
+
