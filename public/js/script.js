@@ -328,6 +328,14 @@ async function handleSearch(page = 1) {
     xhr.send();
 }
 
+function handleVideoClick(videoUrl) {
+    document.querySelector('[data-tab="download-tab"]').click();
+    
+    setTimeout(() => {
+        getTikTokData(videoUrl);
+    }, 300);
+}
+
 function displaySearchResults(videos, hasMore) {
     const resultsContainer = document.getElementById('search-results');
     const pagination = document.getElementById('search-pagination');
@@ -337,7 +345,7 @@ function displaySearchResults(videos, hasMore) {
             <h2>Search Results</h2>
             <div class="options-grid">
                 ${videos.map(video => `
-                    <div class="option-card" onclick="window.location.href='?url=${encodeURIComponent(video.download_page)}'">
+                    <div class="option-card" onclick="handleVideoClick('${video.video_url}')">
                         <div class="video-preview">
                             <img src="${video.cover}" alt="${video.title}" style="width: 100%; border-radius: 12px 12px 0 0;">
                             <div class="video-stats">
@@ -447,11 +455,4 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     window.addEventListener('scroll', handleScroll);
-    
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlParam = urlParams.get('url');
-    if (urlParam) {
-        document.querySelector('[data-tab="download-tab"]').click();
-        getTikTokData(urlParam);
-    }
 });
