@@ -1,13 +1,26 @@
 const API_BASE_URL = 'https://api-tiktok-rscoders.vercel.app/';
 
+const extractTikTokUrl = (text) => {
+    const urlPattern = /https?:\/\/(?:www\.)?(?:vm\.tiktok\.com|vt\.tiktok\.com|tiktok\.com)\/[^\s]*/gi;
+    const matches = text.match(urlPattern);
+    if (matches && matches.length > 0) return matches[0].split(/[\s,]/)[0];
+    return null;
+};
+
 async function pasteFromClipboard() {
     try {
         const text = await navigator.clipboard.readText();
-        const input = document.getElementById('tiktok-url');
-        input.value = text.trim();
-        input.classList.add('paste-effect');
-        setTimeout(() => input.classList.remove('paste-effect'), 800);
-        input.focus();
+        const url = extractTikTokUrl(text);
+        
+        if (url) {
+            const input = document.getElementById('tiktok-url');
+            input.value = url;
+            input.classList.add('paste-effect');
+            setTimeout(() => input.classList.remove('paste-effect'), 800);
+            input.focus();
+        } else {
+            showError('No valid TikTok URL found in clipboard!');
+        }
     } catch (err) {
         showError('Failed to read clipboard. Please paste manually.');
     }
@@ -39,6 +52,18 @@ function handleDownload() {
         return;
     }
     
+    const extractedUrl = extractTikTokUrl(url);
+    if (extractedUrl) {
+        url = extractedUrl;
+        input.value = url;
+    }
+    
+    const tiktokRegex = /^https:\/\/.*tiktok\.com\/.+/;
+    if (!tiktokRegex.test(url)) {
+        showError('Invalid TikTok URL! Please enter a valid TikTok link.');
+        return;
+    }
+    
     getTikTokData(url);
 }
 
@@ -56,7 +81,7 @@ function getTikTokData(url) {
     }
     
     const xhr = new XMLHttpRequest();
-    xhr.open('GET', API_BASE_URL + 'api/download?url=' + encodeURIComponent(url), true);
+    xhr.open('GET', API_BASE_URL + 'api/tiktok?url=' + encodeURIComponent(url), true);
     
     xhr.onload = function() {
         loader.classList.remove('active');
@@ -84,6 +109,13 @@ function getTikTokData(url) {
     };
     
     xhr.send();
+}
+
+function sanitizeFilename(text) {
+    return text
+        .replace(/[^\w\s-]/g, '')
+        .replace(/\s+/g, '_')
+        .substring(0, 50);
 }
 
 function displayResult(data) {
@@ -126,53 +158,48 @@ function displayResult(data) {
     const optionsGrid = document.getElementById('options-grid');
     optionsGrid.innerHTML = '';
     
-    const timestamp = Date.now();
-    
-    const addCustomFilename = (url, filename) => {
-        if (!url) return null;
-        const urlObj = new URL(url);
-        urlObj.searchParams.set('filename', filename);
-        return urlObj.toString();
-    };
+    const baseFilename = sanitizeFilename(data.title_video);
+    const author = sanitizeFilename(data.author_username);
     
     if (data.video_hd) {
-        const customUrl = addCustomFilename(data.video_hd, `TikTok-VID-${timestamp}_HD.mp4`);
         const videoHDCard = createOptionCard(
             'Video HD',
             'High Quality Video',
             'fa-video',
             'video',
-            customUrl,
+            data.video_hd,
             'HD',
-            'hd'
+            'hd',
+            `${author}_${baseFilename}_HD.mp4`
         );
         optionsGrid.appendChild(videoHDCard);
     }
     
     if (data.video_sd) {
-        const customUrl = addCustomFilename(data.video_sd, `TikTok-VID-${timestamp}_SD.mp4`);
         const videoSDCard = createOptionCard(
             'Video SD',
             'Standard Quality Video',
             'fa-video',
             'video',
-            customUrl,
+            data.video_sd,
             'SD',
-            'sd'
+            'sd',
+            `${author}_${baseFilename}_SD.mp4`
         );
         optionsGrid.appendChild(videoSDCard);
     }
     
     if (data.audio) {
-        const customUrl = addCustomFilename(data.audio, `TikTok-AUD-${timestamp}.mp3`);
+        const audioFilename = sanitizeFilename(data.title_audio);
         const audioCard = createOptionCard(
             'Audio MP3',
             data.title_audio,
             'fa-music',
             'audio',
-            customUrl,
+            data.audio,
             'MP3',
-            'audio'
+            'audio',
+            `${author}_${audioFilename}.mp3`
         );
         optionsGrid.appendChild(audioCard);
     }
@@ -224,7 +251,6 @@ function showNoResult(message) {
                 <i class="fas fa-redo"></i>
                 Try Again
             </button>
-        </button>
         </div>
     `;
     
@@ -232,7 +258,7 @@ function showNoResult(message) {
     window.scrollTo({ top: noResultContainer.offsetTop - 100, behavior: 'smooth' });
 }
 
-function createOptionCard(title, description, icon, type, downloadUrl, badgeText, badgeClass) {
+function createOptionCard(title, description, icon, type, sourcesUrl, badgeText, badgeClass, filename) {
     const card = document.createElement('div');
     card.className = 'option-card';
     
@@ -248,7 +274,7 @@ function createOptionCard(title, description, icon, type, downloadUrl, badgeText
         </div>
         <div class="option-action">
             <span class="quality-badge ${badgeClass}">${badgeText}</span>
-            <button class="download-action-btn" onclick="downloadFile('${downloadUrl}')">
+            <button class="download-action-btn" onclick="downloadFile('${sourcesUrl}', '${filename}')">
                 Download <i class="fas fa-arrow-right"></i>
             </button>
         </div>
@@ -257,9 +283,12 @@ function createOptionCard(title, description, icon, type, downloadUrl, badgeText
     return card;
 }
 
-function downloadFile(downloadUrl) {
+function downloadFile(sourcesUrl, filename) {
+    const DownloadUrl = API_BASE_URL + 'api/download?url=' + encodeURIComponent(sourcesUrl) + '&filename=' + encodeURIComponent(filename);
+    
     const link = document.createElement('a');
-    link.href = downloadUrl;
+    link.href = DownloadUrl;
+    link.download = filename;
     link.target = '_blank';
     document.body.appendChild(link);
     link.click();
