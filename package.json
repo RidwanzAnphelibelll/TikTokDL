@@ -1,0 +1,12 @@
+{
+  "name": "TikTokDownloader",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "RSCoders",
+  "dependencies": {
+    "chalk": "^2.3.0",
+    "express": "^5.1.0"
+  }
+}
