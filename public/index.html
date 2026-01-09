@@ -29,74 +29,128 @@
     </header>
 
     <div class="container">
-        <div class="download-section">
-            <div class="input-container">
-                <div class="search-box">
-                    <div class="search-input-wrapper">
-                        <button type="button" id="paste-btn" class="input-icon" title="Paste from clipboard">
-                            <i class="fas fa-link"></i>
+        <div class="tab-buttons">
+            <button class="tab-btn active" data-tab="search-tab">
+                <i class="fas fa-search"></i> Search Videos
+            </button>
+            <button class="tab-btn" data-tab="download-tab">
+                <i class="fas fa-download"></i> Download Video
+            </button>
+        </div>
+
+        <div class="tab-content active" id="search-tab">
+            <div class="download-section">
+                <div class="input-container">
+                    <div class="search-box">
+                        <div class="search-input-wrapper">
+                            <input type="text" id="search-query" placeholder="Search TikTok videos..." />
+                        </div>
+                        <button id="search-btn" class="download-btn">
+                            <i class="fas fa-search"></i> Search
                         </button>
-                        <input type="text" id="tiktok-url" placeholder="Paste TikTok URL here..." />
                     </div>
-                    <button id="download-btn" class="download-btn">
-                        <i class="fas fa-download"></i> Download
+                    <div class="url-examples">
+                        <p><i class="fas fa-info-circle"></i> Search for trending videos, hashtags, or content</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="loader" id="search-loader">
+                <div class="loader-spinner"></div>
+                <p>Searching videos...</p>
+            </div>
+
+            <div class="error-message" id="search-error-message">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3>Search Failed</h3>
+                <p id="search-error-text">Unable to search videos</p>
+            </div>
+
+            <div id="search-results" style="display: none;"></div>
+
+            <div class="pagination" id="search-pagination" style="display: none;">
+                <span id="page-info" class="page-info"></span>
+                <div class="pagination-controls">
+                    <button id="prev-page" class="pagination-btn">
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </button>
+                    <button id="next-page" class="pagination-btn">
+                        Next <i class="fas fa-chevron-right"></i>
                     </button>
                 </div>
-                <div class="url-examples">
-                    <p><i class="fas fa-info-circle"></i> Supported URLs: vm.tiktok.com, vt.tiktok.com, tiktok.com</p>
-                </div>
             </div>
         </div>
 
-        <div class="loader" id="loader">
-            <div class="loader-spinner"></div>
-            <p>Processing TikTok URL...</p>
-        </div>
-
-        <div class="error-message" id="error-message">
-            <i class="fas fa-exclamation-triangle"></i>
-            <h3>Download Failed</h3>
-            <p id="error-text">Unable to process the TikTok URL</p>
-        </div>
-
-        <div class="result-container" id="result-container" style="display: none;">
-            <div class="result-header">
-                <div class="author-info">
-                    <img id="author-avatar" class="author-avatar" src="" alt="Author Avatar" style="display: none;">
-                    <div class="author-avatar-placeholder" id="author-avatar-placeholder">
-                        <i class="fas fa-user-circle"></i>
+        <div class="tab-content" id="download-tab">
+            <div class="download-section">
+                <div class="input-container">
+                    <div class="search-box">
+                        <div class="search-input-wrapper">
+                            <button type="button" id="paste-btn" class="input-icon" title="Paste from clipboard">
+                                <i class="fas fa-link"></i>
+                            </button>
+                            <input type="text" id="tiktok-url" placeholder="Paste TikTok URL here..." />
+                        </div>
+                        <button id="download-btn" class="download-btn">
+                            <i class="fas fa-download"></i> Download
+                        </button>
                     </div>
-                    <div class="author-details">
-                        <h3 id="author-nickname"></h3>
-                        <a href="#" id="author-username-link" target="_blank">
-                            <p id="author-username"></p>
-                            <i class="fas fa-arrow-right"></i>
-                        </a>
+                    <div class="url-examples">
+                        <p><i class="fas fa-info-circle"></i> Supported URLs: vm.tiktok.com, vt.tiktok.com, tiktok.com</p>
                     </div>
                 </div>
             </div>
 
-            <div class="result-content">
-                <div class="video-preview">
-                    <img id="video-thumbnail" src="" alt="Video Thumbnail">
-                    <div class="video-stats">
-                        <span><i class="fas fa-heart"></i> <span id="stat-likes"></span></span>
-                        <span><i class="fas fa-comment"></i> <span id="stat-comments"></span></span>
-                        <span><i class="fas fa-share"></i> <span id="stat-shares"></span></span>
-                        <span><i class="fas fa-eye"></i> <span id="stat-views"></span></span>
+            <div class="loader" id="loader">
+                <div class="loader-spinner"></div>
+                <p>Processing TikTok URL...</p>
+            </div>
+
+            <div class="error-message" id="error-message">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3>Download Failed</h3>
+                <p id="error-text">Unable to process the TikTok URL</p>
+            </div>
+
+            <div class="result-container" id="result-container" style="display: none;">
+                <div class="result-header">
+                    <div class="author-info">
+                        <img id="author-avatar" class="author-avatar" src="" alt="Author Avatar" style="display: none;">
+                        <div class="author-avatar-placeholder" id="author-avatar-placeholder">
+                            <i class="fas fa-user-circle"></i>
+                        </div>
+                        <div class="author-details">
+                            <h3 id="author-nickname"></h3>
+                            <a href="#" id="author-username-link" target="_blank">
+                                <p id="author-username"></p>
+                                <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
                     </div>
                 </div>
 
-                <div class="video-info">
-                    <h2 id="video-title"></h2>
-                    <div class="video-meta">
-                        <span><i class="fas fa-clock"></i> Duration: <span id="video-duration"></span></span>
+                <div class="result-content">
+                    <div class="video-preview">
+                        <img id="video-thumbnail" src="" alt="Video Thumbnail">
+                        <div class="video-stats">
+                            <span><i class="fas fa-heart"></i> <span id="stat-likes"></span></span>
+                            <span><i class="fas fa-comment"></i> <span id="stat-comments"></span></span>
+                            <span><i class="fas fa-share"></i> <span id="stat-shares"></span></span>
+                            <span><i class="fas fa-eye"></i> <span id="stat-views"></span></span>
+                        </div>
                     </div>
-                </div>
 
-                <div class="download-options" id="download-options">
-                    <h3><i class="fas fa-download"></i> Download Options</h3>
-                    <div class="options-grid" id="options-grid"></div>
+                    <div class="video-info">
+                        <h2 id="video-title"></h2>
+                        <div class="video-meta">
+                            <span><i class="fas fa-clock"></i> Duration: <span id="video-duration"></span></span>
+                        </div>
+                    </div>
+
+                    <div class="download-options" id="download-options">
+                        <h3><i class="fas fa-download"></i> Download Options</h3>
+                        <div class="options-grid" id="options-grid"></div>
+                    </div>
                 </div>
             </div>
         </div>
