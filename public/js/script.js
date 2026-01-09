@@ -81,7 +81,7 @@ function getTikTokData(url) {
     }
     
     const xhr = new XMLHttpRequest();
-    xhr.open('GET', API_BASE_URL + 'api/tiktok?url=' + encodeURIComponent(url), true);
+    xhr.open('GET', API_BASE_URL + 'api/download?url=' + encodeURIComponent(url), true);
     
     xhr.onload = function() {
         loader.classList.remove('active');
