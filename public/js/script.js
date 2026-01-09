@@ -1,8 +1,5 @@
 const API_BASE_URL = 'https://api-tiktok-rscoders.vercel.app/';
 
-let currentPage = 1;
-let currentQuery = '';
-
 async function pasteFromClipboard() {
     try {
         const text = await navigator.clipboard.readText();
@@ -264,123 +261,6 @@ function showError(message) {
     errorMessage.classList.add('active');
 }
 
-function showSearchError(message) {
-    const errorMessage = document.getElementById('search-error-message');
-    const errorText = document.getElementById('search-error-text');
-    
-    errorText.textContent = message;
-    errorMessage.classList.add('active');
-}
-
-async function handleSearch(page = 1) {
-    const searchInput = document.getElementById('search-query');
-    const query = searchInput.value.trim();
-    
-    if (!query && page === 1) {
-        showSearchError('Please enter a search query!');
-        return;
-    }
-    
-    if (page === 1) {
-        currentQuery = query;
-    }
-    
-    currentPage = page;
-    
-    const loader = document.getElementById('search-loader');
-    const resultsContainer = document.getElementById('search-results');
-    const pagination = document.getElementById('search-pagination');
-    const errorMessage = document.getElementById('search-error-message');
-    
-    loader.classList.add('active');
-    resultsContainer.style.display = 'none';
-    pagination.style.display = 'none';
-    errorMessage.classList.remove('active');
-    
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', API_BASE_URL + 'api/search?query=' + encodeURIComponent(currentQuery) + '&page=' + page, true);
-    
-    xhr.onload = function() {
-        loader.classList.remove('active');
-        
-        if (xhr.status >= 200 && xhr.status < 300) {
-            try {
-                const data = JSON.parse(xhr.responseText);
-                
-                if (data.success && data.data.length > 0) {
-                    displaySearchResults(data.data, data.hasMore);
-                } else {
-                    showSearchError('No videos found for your search.');
-                }
-            } catch (e) {
-                showSearchError('Failed to parse response data!');
-            }
-        } else {
-            showSearchError('Failed to search videos. Please try again.');
-        }
-    };
-    
-    xhr.onerror = function() {
-        loader.classList.remove('active');
-        showSearchError('Network error occurred. Please check your connection.');
-    };
-    
-    xhr.send();
-}
-
-function handleVideoClick(videoUrl) {
-    document.querySelector('[data-tab="download-tab"]').click();
-    
-    setTimeout(() => {
-        getTikTokData(videoUrl);
-    }, 300);
-}
-
-function displaySearchResults(videos, hasMore) {
-    const resultsContainer = document.getElementById('search-results');
-    const pagination = document.getElementById('search-pagination');
-    
-    resultsContainer.innerHTML = `
-        <div class="features-section">
-            <h2>Search Results</h2>
-            <div class="options-grid">
-                ${videos.map(video => `
-                    <div class="option-card" onclick="handleVideoClick('${video.video_url}')">
-                        <div class="video-preview">
-                            <img src="${video.cover}" alt="${video.title}" style="width: 100%; border-radius: 12px 12px 0 0;">
-                            <div class="video-stats">
-                                <span><i class="fas fa-heart"></i> ${video.digg_count}</span>
-                                <span><i class="fas fa-comment"></i> ${video.comment_count}</span>
-                                <span><i class="fas fa-eye"></i> ${video.play_count}</span>
-                            </div>
-                        </div>
-                        <div class="option-header">
-                            <div style="display: flex; align-items: center; gap: 12px; padding: 16px;">
-                                <img src="${video.author.avatar}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" alt="${video.author.nickname}">
-                                <div>
-                                    <h4 style="margin: 0; font-size: 14px;">${video.author.nickname}</h4>
-                                    <p style="margin: 0; font-size: 12px; color: #666;">@${video.author.unique_id}</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="option-details" style="padding: 0 16px 16px;">
-                            <h4 style="font-size: 14px; margin-bottom: 8px;">${video.title.substring(0, 60)}${video.title.length > 60 ? '...' : ''}</h4>
-                            <p style="font-size: 12px; color: #666;"><i class="fas fa-clock"></i> ${video.duration}</p>
-                        </div>
-                    </div>
-                `).join('')}
-            </div>
-        </div>
-    `;
-    
-    resultsContainer.style.display = 'block';
-    
-    document.getElementById('page-info').textContent = 'Page ' + currentPage;
-    document.getElementById('prev-page').disabled = currentPage === 1;
-    document.getElementById('next-page').disabled = !hasMore;
-    pagination.style.display = 'flex';
-}
-
 function handleScroll() {
     const header = document.querySelector('.header');
     if (window.scrollY > 50) {
@@ -398,36 +278,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const pasteBtn = document.getElementById('paste-btn');
     const hamburgerMenu = document.getElementById('hamburger-menu');
     const navMenu = document.getElementById('nav-menu');
-    const searchBtn = document.getElementById('search-btn');
-    const searchInput = document.getElementById('search-query');
-    const prevBtn = document.getElementById('prev-page');
-    const nextBtn = document.getElementById('next-page');
-    const tabButtons = document.querySelectorAll('.tab-btn');
     
     downloadBtn.addEventListener('click', handleDownload);
     pasteBtn.addEventListener('click', pasteFromClipboard);
-    searchBtn.addEventListener('click', () => handleSearch(1));
     
     input.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
             handleDownload();
         }
-    });
-    
-    searchInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            handleSearch(1);
-        }
-    });
-    
-    prevBtn.addEventListener('click', function() {
-        if (currentPage > 1) {
-            handleSearch(currentPage - 1);
-        }
-    });
-    
-    nextBtn.addEventListener('click', function() {
-        handleSearch(currentPage + 1);
     });
     
     hamburgerMenu.addEventListener('click', function() {
@@ -440,19 +298,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    tabButtons.forEach(btn => {
-        btn.addEventListener('click', function() {
-            const tabName = this.getAttribute('data-tab');
-            
-            tabButtons.forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.remove('active');
-            });
-            document.getElementById(tabName).classList.add('active');
-        });
-    });
-    
     window.addEventListener('scroll', handleScroll);
 });
+
