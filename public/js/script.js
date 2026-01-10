@@ -7,10 +7,42 @@ async function pasteFromClipboard() {
         input.value = text.trim();
         input.classList.add('paste-effect');
         setTimeout(() => input.classList.remove('paste-effect'), 800);
+        updateInputIcon();
         input.focus();
     } catch (err) {
         showError('Failed to read clipboard. Please paste manually.');
     }
+}
+
+function updateInputIcon() {
+    const input = document.getElementById('tiktok-url');
+    const pasteBtn = document.getElementById('paste-btn');
+    const icon = pasteBtn.querySelector('i');
+    
+    if (input.value.trim()) {
+        icon.className = 'fas fa-times';
+        pasteBtn.setAttribute('title', 'Clear URL');
+        pasteBtn.setAttribute('aria-label', 'Clear URL');
+    } else {
+        icon.className = 'fas fa-paste';
+        pasteBtn.setAttribute('title', 'Paste from clipboard');
+        pasteBtn.setAttribute('aria-label', 'Paste URL');
+    }
+}
+
+function handleIconClick() {
+    const input = document.getElementById('tiktok-url');
+    
+    if (input.value.trim()) {
+        clearInput();
+    } else {
+        pasteFromClipboard();
+    }
+}
+
+function isValidTikTokURL(url) {
+    const pattern = /^https:\/\/.*tiktok\.com\/.+/;
+    return pattern.test(url);
 }
 
 function clearInput() {
@@ -18,6 +50,7 @@ function clearInput() {
     const errorMessage = document.getElementById('error-message');
     const resultContainer = document.getElementById('result-container');
     const noResultContainer = document.getElementById('no-result-container');
+    const downloadSection = document.querySelector('.download-section');
     
     input.value = '';
     errorMessage.classList.remove('active');
@@ -25,9 +58,11 @@ function clearInput() {
     if (noResultContainer) {
         noResultContainer.style.display = 'none';
     }
+    downloadSection.style.display = 'block';
+    updateInputIcon();
     input.focus();
     
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'auto' });
 }
 
 function handleDownload() {
@@ -36,6 +71,11 @@ function handleDownload() {
     
     if (!url) {
         showError('Please enter a TikTok URL!');
+        return;
+    }
+    
+    if (!isValidTikTokURL(url)) {
+        showError('Invalid TikTok URL! Please enter a valid TikTok link.');
         return;
     }
     
@@ -74,7 +114,7 @@ function getTikTokData(url) {
                 showNoResult('Failed to parse response data!');
             }
         } else {
-            showNoResult('Please check your TikTok URL!');
+            showNoResult('Please check your TikTok video link!');
         }
     };
     
@@ -89,10 +129,13 @@ function getTikTokData(url) {
 function displayResult(data) {
     const resultContainer = document.getElementById('result-container');
     const noResultContainer = document.getElementById('no-result-container');
+    const downloadSection = document.querySelector('.download-section');
     
     if (noResultContainer) {
         noResultContainer.style.display = 'none';
     }
+    
+    downloadSection.style.display = 'none';
     
     document.getElementById('author-nickname').textContent = data.author_nickname;
     
@@ -115,54 +158,123 @@ function displayResult(data) {
         authorAvatarPlaceholder.style.display = 'flex';
     }
     
-    document.getElementById('video-thumbnail').src = data.thumbnail;
-    document.getElementById('video-title').textContent = data.title_video;
-    document.getElementById('video-duration').textContent = data.duration;
-    document.getElementById('stat-likes').textContent = data.likes;
-    document.getElementById('stat-comments').textContent = data.comments;
-    document.getElementById('stat-shares').textContent = data.shares;
-    document.getElementById('stat-views').textContent = data.views;
+    const videoPreview = document.querySelector('.video-preview');
+    const titleInfo = document.querySelector('.video-info');
+    const downloadOptions = document.getElementById('download-options');
     
-    const optionsGrid = document.getElementById('options-grid');
-    optionsGrid.innerHTML = '';
-    
-    if (data.video_hd) {
-        const videoHDCard = createOptionCard(
-            'Video HD',
-            'High Quality Video',
-            'fa-video',
-            'video',
-            data.video_hd,
-            'HD',
-            'hd'
-        );
-        optionsGrid.appendChild(videoHDCard);
-    }
-    
-    if (data.video_sd) {
-        const videoSDCard = createOptionCard(
-            'Video SD',
-            'Standard Quality Video',
-            'fa-video',
-            'video',
-            data.video_sd,
-            'SD',
-            'sd'
-        );
-        optionsGrid.appendChild(videoSDCard);
-    }
-    
-    if (data.audio) {
-        const audioCard = createOptionCard(
-            'Audio MP3',
-            data.title_audio,
-            'fa-music',
-            'audio',
-            data.audio,
-            'MP3',
-            'audio'
-        );
-        optionsGrid.appendChild(audioCard);
+    if (data.type === 'image') {
+        videoPreview.innerHTML = `
+            <div class="images-preview-container">
+                <div class="images-grid" id="images-grid"></div>
+                <div class="images-stats">
+                    <span><i class="fas fa-heart"></i> ${data.likes}</span>
+                    <span><i class="fas fa-comment"></i> ${data.comments}</span>
+                    <span><i class="fas fa-share"></i> ${data.shares}</span>
+                    <span><i class="fas fa-eye"></i> ${data.views}</span>
+                </div>
+            </div>
+        `;
+        
+        const imagesGrid = document.getElementById('images-grid');
+        data.images.forEach((imageUrl, index) => {
+            const imageItem = document.createElement('div');
+            imageItem.className = 'image-item';
+            imageItem.innerHTML = `
+                <img src="${imageUrl}" alt="Image ${index + 1}" loading="lazy">
+                <div class="image-info">
+                    <span class="image-number">#${index + 1}</span>
+                    <button class="image-download-btn" onclick="downloadFile('${imageUrl}')">
+                        <i class="fas fa-download"></i> Download
+                    </button>
+                </div>
+            `;
+            imagesGrid.appendChild(imageItem);
+        });
+        
+        titleInfo.innerHTML = `
+            <h2>${data.title_image}</h2>
+        `;
+        
+        downloadOptions.innerHTML = `
+            <h3><i class="fas fa-download"></i> Download Options</h3>
+            <div class="options-grid" id="options-grid"></div>
+        `;
+        
+        const optionsGrid = document.getElementById('options-grid');
+        
+        if (data.audio) {
+            const audioCard = createOptionCard(
+                'Audio MP3',
+                data.title_audio,
+                'fa-music',
+                'audio',
+                data.audio,
+                'MP3',
+                'audio'
+            );
+            optionsGrid.appendChild(audioCard);
+        }
+        
+    } else {
+        videoPreview.innerHTML = `
+            <img id="video-thumbnail" src="${data.thumbnail}" alt="Video Thumbnail" />
+            <div class="video-stats">
+                <span><i class="fas fa-heart"></i> ${data.likes}</span>
+                <span><i class="fas fa-comment"></i> ${data.comments}</span>
+                <span><i class="fas fa-share"></i> ${data.shares}</span>
+                <span><i class="fas fa-eye"></i> ${data.views}</span>
+            </div>
+        `;
+        
+        titleInfo.innerHTML = `
+            <h2 id="video-title">${data.title_video}</h2>
+        `;
+        
+        downloadOptions.innerHTML = `
+            <h3><i class="fas fa-download"></i> Download Options</h3>
+            <div class="options-grid" id="options-grid"></div>
+        `;
+        
+        const optionsGrid = document.getElementById('options-grid');
+        
+        if (data.video_hd) {
+            const videoHDCard = createOptionCard(
+                'Video HD',
+                'High Quality Video',
+                'fa-video',
+                'video',
+                data.video_hd,
+                'HD',
+                'hd'
+            );
+            optionsGrid.appendChild(videoHDCard);
+        }
+        
+        if (data.video_sd) {
+            const videoSDCard = createOptionCard(
+                'Video SD',
+                'Standard Quality Video',
+                'fa-video',
+                'video',
+                data.video_sd,
+                'SD',
+                'sd'
+            );
+            optionsGrid.appendChild(videoSDCard);
+        }
+        
+        if (data.audio) {
+            const audioCard = createOptionCard(
+                'Audio MP3',
+                data.title_audio,
+                'fa-music',
+                'audio',
+                data.audio,
+                'MP3',
+                'audio'
+            );
+            optionsGrid.appendChild(audioCard);
+        }
     }
     
     const downloadMoreContainer = document.createElement('div');
@@ -170,11 +282,10 @@ function displayResult(data) {
     downloadMoreContainer.innerHTML = `
         <button class="download-more-btn" onclick="clearInput()">
             <i class="fas fa-plus-circle"></i>
-            Download More Videos
+            Download Mores
         </button>
     `;
     
-    const downloadOptions = document.getElementById('download-options');
     const existingMore = downloadOptions.querySelector('.download-more-container');
     if (existingMore) {
         existingMore.remove();
@@ -182,7 +293,6 @@ function displayResult(data) {
     downloadOptions.appendChild(downloadMoreContainer);
     
     resultContainer.style.display = 'block';
-    window.scrollTo({ top: resultContainer.offsetTop - 100, behavior: 'smooth' });
 }
 
 function showNoResult(message) {
@@ -216,7 +326,6 @@ function showNoResult(message) {
     `;
     
     noResultContainer.style.display = 'block';
-    window.scrollTo({ top: noResultContainer.offsetTop - 100, behavior: 'smooth' });
 }
 
 function createOptionCard(title, description, icon, type, downloadUrl, badgeText, badgeClass) {
@@ -280,7 +389,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const navMenu = document.getElementById('nav-menu');
     
     downloadBtn.addEventListener('click', handleDownload);
-    pasteBtn.addEventListener('click', pasteFromClipboard);
+    pasteBtn.addEventListener('click', handleIconClick);
+    
+    input.addEventListener('input', updateInputIcon);
     
     input.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
@@ -300,4 +411,3 @@ document.addEventListener('DOMContentLoaded', function() {
     
     window.addEventListener('scroll', handleScroll);
 });
-
