@@ -1,5 +1,5 @@
 {
-  "name": "TikTokDownloader",
+  "name": "TikTokDL",
   "main": "_worker.js",
   
   "scripts": {
