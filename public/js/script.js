@@ -114,7 +114,7 @@ function getTikTokData(url) {
                 showNoResult('Failed to parse response data!');
             }
         } else {
-            showNoResult('Please check your TikTok video link!');
+            showNoResult('Please check your TikTok link!');
         }
     };
     
