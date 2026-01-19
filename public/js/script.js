@@ -98,7 +98,7 @@ function clearInput() {
     updateInputIcon();
     input.focus();
     
-    window.scrollTo({ top: 0, behavior: 'auto' });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function handleDownload() {
