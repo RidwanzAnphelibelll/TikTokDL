@@ -83,6 +83,8 @@ function clearInput() {
     const resultContainer = document.getElementById('result-container');
     const noResultContainer = document.getElementById('no-result-container');
     const downloadSection = document.querySelector('.download-section');
+    const featuresSection = document.querySelector('.features-section');
+    const howToSection = document.querySelector('.how-to-section');
     
     input.value = '';
     errorMessage.classList.remove('active');
@@ -91,6 +93,8 @@ function clearInput() {
         noResultContainer.style.display = 'none';
     }
     downloadSection.style.display = 'block';
+    featuresSection.style.display = 'block';
+    howToSection.style.display = 'block';
     updateInputIcon();
     input.focus();
     
@@ -162,12 +166,16 @@ function displayResult(data) {
     const resultContainer = document.getElementById('result-container');
     const noResultContainer = document.getElementById('no-result-container');
     const downloadSection = document.querySelector('.download-section');
+    const featuresSection = document.querySelector('.features-section');
+    const howToSection = document.querySelector('.how-to-section');
     
     if (noResultContainer) {
         noResultContainer.style.display = 'none';
     }
     
     downloadSection.style.display = 'none';
+    featuresSection.style.display = 'none';
+    howToSection.style.display = 'none';
     
     document.getElementById('author-nickname').textContent = data.author_nickname;
     
