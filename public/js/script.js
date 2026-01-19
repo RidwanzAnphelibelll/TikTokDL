@@ -242,7 +242,8 @@ function displayResult(data) {
                 'audio',
                 data.audio,
                 'MP3',
-                'audio'
+                'audio',
+                data.audio_size
             );
             optionsGrid.appendChild(audioCard);
         }
@@ -308,7 +309,8 @@ function displayResult(data) {
                 'audio',
                 data.audio,
                 'MP3',
-                'audio'
+                'audio',
+                data.audio_size
             );
             optionsGrid.appendChild(audioCard);
         }
