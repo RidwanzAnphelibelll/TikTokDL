@@ -1,2 +1,20 @@
 #!/usr/bin/env node
-export default{async fetch(e,t,n){const h=new URL(e.url);if("/"===h.pathname){const n=new Request(h.origin+"/public/index.html",{method:e.method,headers:e.headers,body:e.body});return t.ASSETS.fetch(n)}return t.ASSETS.fetch(e)}};
+
+export default {
+  async fetch(request, env, ctx) {
+    const url = new URL(request.url);
+    
+    if (url.pathname === '/') {
+    
+        const indexRequest = new Request(url.origin + '/public/index.html', {
+            method: request.method,
+            headers: request.headers,
+            body: request.body
+        });
+        
+        return env.ASSETS.fetch(indexRequest);
+    }
+    
+    return env.ASSETS.fetch(request);
+  }
+}
